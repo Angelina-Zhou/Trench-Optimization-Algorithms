@@ -5,7 +5,7 @@ import matplotlib.pyplot as plt
 
 
 spec = importlib.util.spec_from_file_location(
-    "calculate_infiltration_2", "/calculate_infiltration_2.py"
+    "calculate_infiltration_2", "./calculate_infiltration_2.py"
 )
 infiltration = importlib.util.module_from_spec(spec)
 spec.loader.exec_module(infiltration)
