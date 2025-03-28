@@ -2,41 +2,23 @@ import numpy as np
 import random
 import importlib.util
 import matplotlib.pyplot as plt
+import csv
+import shared_vars
 
 
 spec = importlib.util.spec_from_file_location(
-    "calculate_infiltration_2", "./calculate_infiltration_2.py"
+    "calculate_infiltration", "./calculate_infiltration.py"
 )
 infiltration = importlib.util.module_from_spec(spec)
 spec.loader.exec_module(infiltration)
 
-V0 = [infiltration.basin_params[i]['A_i'] * 1 for i in range(infiltration.num_basins)]
-
-NUM_PARTICLES = 30
-NUM_TIME_STEPS = 100
-NUM_ITERATIONS = 500
-Q_in = 0.0315  # m³/s
-TIME_STEP_SECONDS = 3600
-
-# Objective: maximize total infiltration volume after all time steps are done
-# uses Newton approximations
-def fitness_function(basin_sequence):
-    V = V0
-    total_infiltration = 0
-    
-    for t in range(NUM_TIME_STEPS):
-        basin_to_fill = int(basin_sequence[t]) - 1 
-        
-        if 0 <= basin_to_fill < infiltration.num_basins:
-            Q_in_i = Q_in
-            dV_dt, vInfiltration = infiltration.compute_dV_dt(V, basin_to_fill)
-            
-
-            V = [min(V[i] + float(dV_dt[i]) * TIME_STEP_SECONDS, infiltration.basin_params[i]['vol']) for i in range(infiltration.num_basins)]
-            
-            total_infiltration += (vInfiltration[basin_to_fill]) * TIME_STEP_SECONDS
-    
-    return -total_infiltration
+V0 = shared_vars.V0
+NUM_PARTICLES = shared_vars.NUM_PARTICLES
+NUM_TIME_STEPS = shared_vars.NUM_TIME_STEPS
+NUM_ITERATIONS = shared_vars.NUM_ITERATIONS
+Q_in = shared_vars.Q_in
+TIME_STEP_SECONDS = shared_vars.TIME_STEP_SECONDS
+CSV_RESULTS_FILE = 'results.csv'
 
 
 def initialize_particles(num_particles, num_time_steps):
@@ -65,7 +47,7 @@ def pso_basic_euclidean():
     particles = initialize_particles(NUM_PARTICLES, NUM_TIME_STEPS)
     velocities = [np.zeros(NUM_TIME_STEPS) for _ in range(NUM_PARTICLES)]
     personal_best = particles[:]
-    personal_best_scores = [fitness_function(p) for p in particles]
+    personal_best_scores = [shared_vars.fitness_function(p) for p in particles]
     global_best = particles[np.argmin(personal_best_scores)]
     global_best_score = min(personal_best_scores)
 
@@ -83,7 +65,7 @@ def pso_basic_euclidean():
             particle = np.clip(particle, 1, infiltration.num_basins)
 
 
-            score = fitness_function(particle)
+            score = shared_vars.fitness_function(particle)
             
 
             if score < personal_best_scores[i]:
@@ -104,7 +86,7 @@ def pso_euclidean_weak_coeff():
     particles = initialize_particles(NUM_PARTICLES, NUM_TIME_STEPS)
     velocities = [np.zeros(NUM_TIME_STEPS) for _ in range(NUM_PARTICLES)]
     personal_best = particles[:]
-    personal_best_scores = [fitness_function(p) for p in particles]
+    personal_best_scores = [shared_vars.fitness_function(p) for p in particles]
     global_best = particles[np.argmin(personal_best_scores)]
     global_best_score = min(personal_best_scores)
 
@@ -122,7 +104,7 @@ def pso_euclidean_weak_coeff():
             particle = np.clip(particle, 1, infiltration.num_basins)
 
 
-            score = fitness_function(particle)
+            score = shared_vars.fitness_function(particle)
             
 
             if score < personal_best_scores[i]:
@@ -142,7 +124,7 @@ def pso_euclidean_strong_coeff():
     particles = initialize_particles(NUM_PARTICLES, NUM_TIME_STEPS)
     velocities = [np.zeros(NUM_TIME_STEPS) for _ in range(NUM_PARTICLES)]
     personal_best = particles[:]
-    personal_best_scores = [fitness_function(p) for p in particles]
+    personal_best_scores = [shared_vars.fitness_function(p) for p in particles]
     global_best = particles[np.argmin(personal_best_scores)]
     global_best_score = min(personal_best_scores)
 
@@ -160,7 +142,7 @@ def pso_euclidean_strong_coeff():
             particle = np.clip(particle, 1, infiltration.num_basins)
 
 
-            score = fitness_function(particle)
+            score = shared_vars.fitness_function(particle)
             
 
             if score < personal_best_scores[i]:
@@ -180,7 +162,7 @@ def pso_euclidean_random_coeff():
     particles = initialize_particles(NUM_PARTICLES, NUM_TIME_STEPS)
     velocities = [np.zeros(NUM_TIME_STEPS) for _ in range(NUM_PARTICLES)]
     personal_best = particles[:]
-    personal_best_scores = [fitness_function(p) for p in particles]
+    personal_best_scores = [shared_vars.fitness_function(p) for p in particles]
     global_best = particles[np.argmin(personal_best_scores)]
     global_best_score = min(personal_best_scores)
 
@@ -200,7 +182,7 @@ def pso_euclidean_random_coeff():
             particle = np.clip(particle, 1, infiltration.num_basins)
 
 
-            score = fitness_function(particle)
+            score = shared_vars.fitness_function(particle)
             
 
             if score < personal_best_scores[i]:
@@ -220,7 +202,7 @@ def pso_euclidean_mutation():
     particles = initialize_particles(NUM_PARTICLES, NUM_TIME_STEPS)
     velocities = [np.zeros(NUM_TIME_STEPS) for _ in range(NUM_PARTICLES)]
     personal_best = particles[:]
-    personal_best_scores = [fitness_function(p) for p in particles]
+    personal_best_scores = [shared_vars.fitness_function(p) for p in particles]
     global_best = particles[np.argmin(personal_best_scores)]
     global_best_score = min(personal_best_scores)
     mutation_rate = 0.05
@@ -238,7 +220,7 @@ def pso_euclidean_mutation():
             particle = np.clip(particle, 1, infiltration.num_basins)
             mutate_particle(particle, mutation_rate)
 
-            score = fitness_function(particle)
+            score = shared_vars.fitness_function(particle)
             
 
             if score < personal_best_scores[i]:
@@ -258,7 +240,7 @@ def pso_hamming():
 
     particles = initialize_particles(NUM_PARTICLES, NUM_TIME_STEPS)
     personal_best = particles.copy()
-    personal_best_scores = np.array([fitness_function(p) for p in particles])
+    personal_best_scores = np.array([shared_vars.fitness_function(p) for p in particles])
     global_best = particles[np.argmin(personal_best_scores)]
     global_best_score = np.min(personal_best_scores)
 
@@ -274,7 +256,7 @@ def pso_hamming():
 
             mutate_particle(particle, mutation_rate)
 
-            score = fitness_function(particle)
+            score = shared_vars.fitness_function(particle)
             
             if score < personal_best_scores[i]:
                 personal_best[i] = particle.copy()
@@ -288,80 +270,92 @@ def pso_hamming():
 
     return global_best, -global_best_score
 
-'''
-pso_variants = {
-    "Basic PSO": pso_basic_euclidean,
-    "Weak Coefficients PSO": pso_euclidean_weak_coeff,
-    "Strong Coefficients PSO": pso_euclidean_strong_coeff,
-    "Random Coefficients PSO": pso_euclidean_random_coeff,
-    "Euclidean PSO with Mutation": pso_euclidean_mutation,
-    "Discrete PSO with Hamming Distance": pso_hamming
-}'''
+if __name__ == "__main__":
 
-pso_variants = {
-    "Random Coefficients PSO": pso_euclidean_random_coeff,
-    "Euclidean PSO with Mutation": pso_euclidean_mutation,
-    "Discrete PSO with Hamming Distance": pso_hamming
-}
+    '''
+    pso_variants = {
+        "Basic PSO": pso_basic_euclidean,
+        "Weak Coefficients PSO": pso_euclidean_weak_coeff,
+        "Strong Coefficients PSO": pso_euclidean_strong_coeff,
+        "Random Coefficients PSO": pso_euclidean_random_coeff,
+        "Euclidean PSO with Mutation": pso_euclidean_mutation,
+        "Discrete PSO with Hamming Distance": pso_hamming
+    }'''
+
+    pso_variants = {
+        "Random Coefficients PSO": pso_euclidean_random_coeff,
+        "Euclidean PSO with Mutation": pso_euclidean_mutation,
+        "Discrete PSO with Hamming Distance": pso_hamming
+    }
 
 
-# To store results for each PSO
-results = {name: [] for name in pso_variants.keys()}
-best_solutions = {}
-best_scores = {}
+    # To store results for each PSO
+    results = {name: [] for name in pso_variants.keys()}
+    best_solutions = {}
+    best_scores = {}
 
-# -------------------------------
-# RUN EXPERIMENTS
-# -------------------------------
+    # -------------------------------
+    # RUN EXPERIMENTS
+    # -------------------------------
 
-NUM_RUNS = 100
+    NUM_RUNS = 1
 
-print("Running PSO variants...")
+    print("Running PSO variants...")
 
-for name, pso_func in pso_variants.items():
-    best_overall_solution = None
-    best_overall_score = float('-inf')
-    for run in range(NUM_RUNS):
-        print(f"run {run + 1} of {name} running...")
-        best_sequence, best_score = pso_func()
-        
-        results[name].append(best_score)
-        
-        if best_score > best_overall_score:
-            best_overall_score = best_score
-            best_overall_solution = best_sequence
-        print(f"run {run} - best score: {best_score:.4f}")
+    for name, pso_func in pso_variants.items():
+        print(f"running variant {name}...")
+        best_overall_solution = None
+        best_overall_score = float('-inf')
+        for run in range(NUM_RUNS):
+            # print(f"run {run + 1} of {name} running...")
+            best_sequence, best_score = pso_func()
+            
+            results[name].append(best_score)
+            
+            if best_score > best_overall_score:
+                best_overall_score = best_score
+                best_overall_solution = best_sequence
+            # print(f"run {run + 1} - best score: {best_score:.4f}")
 
-    best_solutions[name] = best_overall_solution
-    best_scores[name] = best_overall_score
-    print(f"{name} - Best Score: {best_overall_score:.4f}")
+        best_solutions[name] = best_overall_solution
+        best_scores[name] = best_overall_score
+        print(f"{name} - Best Score: {best_overall_score:.4f}")
 
-# -------------------------------
-# ANALYSIS AND HISTOGRAMS
-# -------------------------------
+    # -------------------------------
+    # ANALYSIS AND HISTOGRAMS
+    # -------------------------------
 
-plt.figure(figsize=(12, 8))
-for i, (name, scores) in enumerate(results.items()):
-    plt.subplot(2, 2, i + 1)
-    plt.hist(scores, bins=20, alpha=0.75, color=np.random.rand(3,), label=name)
-    plt.title(f"Histogram of Scores - {name}")
-    plt.xlabel("Optimal Score")
-    plt.ylabel("Frequency")
-    plt.legend()
+    plt.figure(figsize=(12, 8))
+    for i, (name, scores) in enumerate(results.items()):
+        plt.subplot(2, 2, i + 1)
+        plt.hist(scores, bins=20, alpha=0.75, color=np.random.rand(3,), label=name)
+        plt.title(f"Histogram of Scores - {name}")
+        plt.xlabel("Optimal Score")
+        plt.ylabel("Frequency")
+        plt.legend()
 
-plt.tight_layout()
-plt.show()
+    plt.tight_layout()
+    plt.show()
 
-# -------------------------------
-# SUMMARY STATISTICS
-# -------------------------------
+    with open(CSV_RESULTS_FILE, mode='w', newline='') as file:
+        writer = csv.writer(file)
 
-print("\nSummary of Results:")
-for name, scores in results.items():
-    avg_score = np.mean(scores)
-    best_score = best_scores[name]
-    print(f"{name}:")
-    print(f"  - Average Optimal Score: {avg_score:.4f}")
-    print(f"  - Best Score Found: {best_score:.4f}")
-    print(f"  - Best Solution: {best_solutions[name]}")
-    print("-" * 40)
+        writer.writerow(results.keys())
+
+        for i in range(len(next(iter(results.values())))):
+            row = [results[key][i] for key in results]
+            writer.writerow(row)
+
+    # -------------------------------
+    # SUMMARY STATISTICS
+    # -------------------------------
+
+    print("\nSummary of Results:")
+    for name, scores in results.items():
+        avg_score = np.mean(scores)
+        best_score = best_scores[name]
+        print(f"{name}:")
+        print(f"  - Average Optimal Score: {avg_score:.4f}")
+        print(f"  - Best Score Found: {best_score:.4f}")
+        print(f"  - Best Solution: {best_solutions[name]}")
+        print("-" * 40)
