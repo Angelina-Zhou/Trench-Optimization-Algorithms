@@ -1,10 +1,16 @@
 import numpy as np
 import random
+import os
 import importlib.util
 
+parent_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), '..'))
+
 spec = importlib.util.spec_from_file_location(
-    "calculate_infiltration", "./calculate_infiltration.py"
+    "calculate_infiltration", os.path.join(parent_dir, "calculate_infiltration.py")
 )
+infiltration = importlib.util.module_from_spec(spec)
+spec.loader.exec_module(infiltration)
+
 infiltration = importlib.util.module_from_spec(spec)
 spec.loader.exec_module(infiltration)
 

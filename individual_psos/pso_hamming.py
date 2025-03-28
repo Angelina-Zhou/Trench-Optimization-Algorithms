@@ -1,7 +1,12 @@
 import numpy as np
 import random
 import importlib.util
+import os
+import sys
+parent_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), '..'))
+sys.path.append(parent_dir)
 import shared_vars
+import calculate_infiltration as infiltration
 
 V0 = shared_vars.V0
 NUM_PARTICLES = shared_vars.NUM_PARTICLES
@@ -10,15 +15,7 @@ NUM_ITERATIONS = shared_vars.NUM_ITERATIONS
 Q_in = shared_vars.Q_in
 TIME_STEP_SECONDS = shared_vars.TIME_STEP_SECONDS
 
-
-spec = importlib.util.spec_from_file_location(
-    "calculate_infiltration", "./calculate_infiltration.py"
-)
-infiltration = importlib.util.module_from_spec(spec)
-spec.loader.exec_module(infiltration)
-
-
-def particle_swarm_optimization_discrete():
+def particle_swarm_optimization(printing = False):
 
     particles = shared_vars.initialize_particles(NUM_PARTICLES, NUM_TIME_STEPS)
     personal_best = particles.copy()
@@ -48,11 +45,12 @@ def particle_swarm_optimization_discrete():
                 global_best = particle.copy()
                 global_best_score = score
         
-        print(f"Iteration {iter + 1}/{NUM_ITERATIONS}, Best Score: {-global_best_score:.4f}")
+        if printing: print(f"Iteration {iter + 1}/{NUM_ITERATIONS}, Best Score: {-global_best_score:.4f}")
 
     return global_best, -global_best_score
 
-best_sequence, best_infiltration = particle_swarm_optimization_discrete()
+if __name__ == "__main__":
+    best_sequence, best_infiltration = particle_swarm_optimization_discrete(True)
 
-print("Optimal Basin Sequence:", best_sequence)
-print(f"Maximum Infiltration: {best_infiltration:.4f} m³")
+    print("Optimal Basin Sequence:", best_sequence)
+    print(f"Maximum Infiltration: {best_infiltration:.4f} m³")

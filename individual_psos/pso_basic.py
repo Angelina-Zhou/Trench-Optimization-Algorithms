@@ -1,7 +1,12 @@
 import numpy as np
 import random
 import importlib.util
+import os
+import sys
+parent_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), '..'))
+sys.path.append(parent_dir)
 import shared_vars
+import calculate_infiltration as infiltration
 
 V0 = shared_vars.V0
 NUM_PARTICLES = shared_vars.NUM_PARTICLES
@@ -11,21 +16,14 @@ Q_in = shared_vars.Q_in
 TIME_STEP_SECONDS = shared_vars.TIME_STEP_SECONDS
 
 
-spec = importlib.util.spec_from_file_location(
-    "calculate_infiltration", "./calculate_infiltration.py"
-)
-infiltration = importlib.util.module_from_spec(spec)
-spec.loader.exec_module(infiltration)
-
-
-def particle_swarm_optimization():
+def particle_swarm_optimization(printing = False):
     particles = shared_vars.initialize_particles(NUM_PARTICLES, NUM_TIME_STEPS)
     velocities = [np.zeros(NUM_TIME_STEPS) for _ in range(NUM_PARTICLES)]
     personal_best = particles[:]
     personal_best_scores = [shared_vars.fitness_function(p) for p in particles]
     global_best = particles[np.argmin(personal_best_scores)]
     global_best_score = min(personal_best_scores)
-    mutation_rate = 0.05
+
 
     for iter in range(NUM_ITERATIONS):
         for i, particle in enumerate(particles):
@@ -38,7 +36,7 @@ def particle_swarm_optimization():
 
             particle += np.round(velocities[i]).astype(int)
             particle = np.clip(particle, 1, infiltration.num_basins)
-            shared_vars.mutate_particle(particle, mutation_rate)
+
 
             score = shared_vars.fitness_function(particle)
             
@@ -52,12 +50,12 @@ def particle_swarm_optimization():
                 global_best = particle
                 global_best_score = score
         
-        print(f"Iteration {iter + 1}/{NUM_ITERATIONS}, Best Infiltration: {-global_best_score:.4f} m³")
+        if printing: print(f"Iteration {iter + 1}/{NUM_ITERATIONS}, Best Infiltration: {-global_best_score:.4f} m³")
 
     return global_best, -global_best_score
 
+if __name__ == "__main__":
+    best_sequence, best_infiltration = particle_swarm_optimization(True)
 
-best_sequence, best_infiltration = particle_swarm_optimization()
-
-print("Optimal Basin Sequence:", best_sequence)
-print(f"Maximum Infiltration: {best_infiltration:.4f} m³")
+    print("Optimal Basin Sequence:", best_sequence)
+    print(f"Maximum Infiltration: {best_infiltration:.4f} m³")
