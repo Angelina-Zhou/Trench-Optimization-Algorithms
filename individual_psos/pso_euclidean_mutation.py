@@ -23,6 +23,7 @@ def particle_swarm_optimization(printing = False):
     global_best = particles[np.argmin(personal_best_scores)]
     global_best_score = min(personal_best_scores)
     mutation_rate = 0.05
+    fitness_history = []
 
     for iter in range(NUM_ITERATIONS):
         for i, particle in enumerate(particles):
@@ -50,11 +51,13 @@ def particle_swarm_optimization(printing = False):
                 global_best_score = score
         
         if printing: print(f"Iteration {iter + 1}/{NUM_ITERATIONS}, Best Infiltration: {-global_best_score:.4f} m³")
+        fitness_history.append(-global_best_score)
 
-    return global_best, -global_best_score
+    return global_best, -global_best_score, fitness_history
 
 if __name__ == "__main__":
-    best_sequence, best_infiltration = particle_swarm_optimization(True)
+    best_sequence, best_infiltration, fitness_history = particle_swarm_optimization(True)
+    shared_vars.plot_fitness_progress(fitness_history, "euclidean mutation PSO")
 
     print("Optimal Basin Sequence:", best_sequence)
     print(f"Maximum Infiltration: {best_infiltration:.4f} m³")

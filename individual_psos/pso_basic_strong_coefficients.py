@@ -15,14 +15,14 @@ NUM_ITERATIONS = shared_vars.NUM_ITERATIONS
 Q_in = shared_vars.Q_in
 TIME_STEP_SECONDS = shared_vars.TIME_STEP_SECONDS
 
-def particle_swarm_optimization(printing = False):
+def particle_swarm_optimization_bk(printing = False):
     particles = shared_vars.initialize_particles(NUM_PARTICLES, NUM_TIME_STEPS)
     velocities = [np.zeros(NUM_TIME_STEPS) for _ in range(NUM_PARTICLES)]
     personal_best = particles[:]
     personal_best_scores = [shared_vars.fitness_function(p) for p in particles]
     global_best = particles[np.argmin(personal_best_scores)]
     global_best_score = min(personal_best_scores)
-
+    fitness_history = []
 
     for iter in range(NUM_ITERATIONS):
         for i, particle in enumerate(particles):
@@ -50,11 +50,13 @@ def particle_swarm_optimization(printing = False):
                 global_best_score = score
         
         if printing: print(f"Iteration {iter + 1}/{NUM_ITERATIONS}, Best Infiltration: {-global_best_score:.4f} m³")
+        fitness_history.append(-global_best_score)
 
-    return global_best, -global_best_score
+    return global_best, -global_best_score, fitness_history
 
 if __name__ == "__main__":
-    best_sequence, best_infiltration = particle_swarm_optimization(True)
+    best_sequence, best_infiltration, fitness_history = particle_swarm_optimization(True)
+    shared_vars.plot_fitness_progress(fitness_history, "strong pull PSO")
 
     print("Optimal Basin Sequence:", best_sequence)
     print(f"Maximum Infiltration: {best_infiltration:.4f} m³")
