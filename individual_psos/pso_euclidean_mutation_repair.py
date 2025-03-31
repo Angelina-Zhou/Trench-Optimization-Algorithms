@@ -15,15 +15,15 @@ NUM_ITERATIONS = shared_vars.NUM_ITERATIONS
 Q_in = shared_vars.Q_in
 TIME_STEP_SECONDS = shared_vars.TIME_STEP_SECONDS
 
-def particle_swarm_optimization(printing = False):
+def particle_swarm_optimization_bk(printing = False, fh = False):
     particles = shared_vars.initialize_particles(NUM_PARTICLES, NUM_TIME_STEPS)
     velocities = [np.zeros(NUM_TIME_STEPS) for _ in range(NUM_PARTICLES)]
     personal_best = particles[:]
-    personal_best_scores = [shared_vars.fitness_function(p) for p in particles]
+    personal_best_scores = [shared_vars.fitness_func_with_repair(p) for p in particles]
     global_best = particles[np.argmin(personal_best_scores)]
     global_best_score = min(personal_best_scores)
     mutation_rate = 0.05
-    fitness_history = []
+    if fh: fitness_history = []
 
     for iter in range(NUM_ITERATIONS):
         for i, particle in enumerate(particles):
@@ -38,7 +38,7 @@ def particle_swarm_optimization(printing = False):
             particle = np.clip(particle, 1, infiltration.num_basins)
             shared_vars.mutate_particle(particle, mutation_rate)
 
-            score = shared_vars.fitness_function(particle)
+            score = shared_vars.fitness_func_with_repair(particle)
             
 
             if score < personal_best_scores[i]:
@@ -51,12 +51,15 @@ def particle_swarm_optimization(printing = False):
                 global_best_score = score
         
         if printing: print(f"Iteration {iter + 1}/{NUM_ITERATIONS}, Best Infiltration: {-global_best_score:.4f} m³")
-        fitness_history.append(-global_best_score)
+        if fh: fitness_history.append(-global_best_score)
 
-    return global_best, -global_best_score, fitness_history
+    if fh:
+        return global_best, -global_best_score, fitness_history
+    else:
+        return global_best, -global_best_score
 
 if __name__ == "__main__":
-    best_sequence, best_infiltration, fitness_history = particle_swarm_optimization(True)
+    best_sequence, best_infiltration, fitness_history = particle_swarm_optimization(True, True)
     shared_vars.plot_fitness_progress(fitness_history, "euclidean mutation PSO")
 
     print("Optimal Basin Sequence:", best_sequence)

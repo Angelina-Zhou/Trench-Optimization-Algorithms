@@ -15,14 +15,14 @@ NUM_ITERATIONS = shared_vars.NUM_ITERATIONS
 Q_in = shared_vars.Q_in
 TIME_STEP_SECONDS = shared_vars.TIME_STEP_SECONDS
 
-def particle_swarm_optimization(printing = False):
+def particle_swarm_optimization(printing = False, fh = False):
 
     particles = shared_vars.initialize_particles(NUM_PARTICLES, NUM_TIME_STEPS)
     personal_best = particles.copy()
-    personal_best_scores = np.array([shared_vars.fitness_func(p) for p in particles])
+    personal_best_scores = np.array([shared_vars.fitness_function(p) for p in particles])
     global_best = particles[np.argmin(personal_best_scores)]
     global_best_score = np.min(personal_best_scores)
-    fitness_history = []
+    if fh: fitness_history = []
 
     max_swaps = NUM_TIME_STEPS // 4
     mutation_rate = 0.05
@@ -47,12 +47,14 @@ def particle_swarm_optimization(printing = False):
                 global_best_score = score
         
         if printing: print(f"Iteration {iter + 1}/{NUM_ITERATIONS}, Best Score: {-global_best_score:.4f}")
-        fitness_history.append(-global_best_score)
-
-    return global_best, -global_best_score, fitness_history
+        if fh: fitness_history.append(-global_best_score)
+    if fh:
+        return global_best, -global_best_score, fitness_history
+    else:
+        return global_best, -global_best_score
 
 if __name__ == "__main__":
-    best_sequence, best_infiltration, fitness_history = particle_swarm_optimization(True)
+    best_sequence, best_infiltration, fitness_history = particle_swarm_optimization(True, True)
     shared_vars.plot_fitness_progress(fitness_history, "hamming PSO with repair")
 
     print("Optimal Basin Sequence:", best_sequence)
