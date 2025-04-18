@@ -6,6 +6,7 @@ import csv
 import shared_vars
 import os
 import math
+import time
 
 
 spec = importlib.util.spec_from_file_location(
@@ -50,7 +51,7 @@ if __name__ == "__main__":
     # RUN EXPERIMENTS
     # -------------------------------
 
-    NUM_RUNS = 1
+    NUM_RUNS = 50
 
     print("Running PSO variants...")
 
@@ -58,18 +59,21 @@ if __name__ == "__main__":
         print(f"running variant {name}...")
         best_overall_solution = None
         best_overall_score = float('-inf')
+        start_time = time.time()
         for run in range(NUM_RUNS):
-            best_sequence, best_score, fitness_history = pso_func()
+            best_sequence, best_score = pso_func()
             
             results[name].append(best_score)
             
             if best_score > best_overall_score:
                 best_overall_score = best_score
                 best_overall_solution = best_sequence
+            print(f"run {run + 1}: best score: {best_score}")
 
         best_solutions[name] = best_overall_solution
         best_scores[name] = best_overall_score
         print(f"{name} - Best Score: {best_overall_score:.4f}")
+        print(f"{time.time() - start_time} seconds taken")
 
     # -------------------------------
     # ANALYSIS AND HISTOGRAMS

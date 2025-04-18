@@ -7,6 +7,7 @@ parent_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), '..'))
 sys.path.append(parent_dir)
 import shared_vars
 import calculate_infiltration as infiltration
+import math
 
 V0 = shared_vars.V0
 
@@ -24,11 +25,34 @@ beta = 0.2  # Heuristic influence
 Q = 100  # Pheromone deposit factor
 
 # Pheromone matrix: num_basins x num_steps
-pheromone = np.ones((num_basins, NUM_TIME_STEPS))
+# pheromone = np.ones((num_basins, NUM_TIME_STEPS))
 
 # Heuristic information (optional, for initial guidance)
 # Can be infiltration rate or inverse of distance if applicable
 heuristic_info = np.ones((num_basins, NUM_TIME_STEPS))
+
+
+# -------------------------------
+# V0 INFILTRATION HEURISTIC
+# -------------------------------
+'''
+heuristic_info = [
+    [1.96029441], [2.39991768], [0.3201129], [1.0732548374999997], 
+    [0.8388136799999999], [0.745382205], [1.6777389150000002], 
+    [0.21224421], [1.2866154300000001]
+]
+flat_heuristic = [value[0] for value in heuristic_info]
+
+min_val = min(flat_heuristic)
+max_val = max(flat_heuristic)
+normalized_heuristic = [(value - min_val) / (max_val - min_val) for value in flat_heuristic]
+heuristic_info = [[value + 1] * NUM_TIME_STEPS for value in normalized_heuristic]'''
+
+# -------------------------------
+# GAMMA HEURISTIC
+# -------------------------------
+
+heuristic_info = [[math.log(basin['Gamma_xi'] * 1e6) + 1] * NUM_TIME_STEPS for basin in infiltration.basin_params]
 
 # ant decision making
 def construct_solution(pheromone, heuristic_info):
@@ -82,12 +106,11 @@ def update_pheromones_ras(pheromone, solutions, fitnesses, n_r=10):
         for t, basin in enumerate(solution):
             pheromone[basin, t] += (n_r - rank) * Q * (fitnesses[idx] / np.max(fitnesses))
 
-def ant_colony_optimization(variant="basic", printing=False):
+def ant_colony_optimization(pheromone, variant="basic", printing=False):
     """
     Main ACO function to optimize basin filling sequence.
     variant: "basic", "eas", "ras", "mmas", or "acs"
     """
-    global pheromone
     best_solution = None
     best_fitness = -np.inf
     fitness_history = []
@@ -98,7 +121,7 @@ def ant_colony_optimization(variant="basic", printing=False):
 
         for ant in range(NUM_ANTS):
             solution = construct_solution(pheromone, heuristic_info)
-            fit = -shared_vars.fitness_func(solution)
+            fit = -shared_vars.fitness_func_with_repair(solution)
             solutions.append(solution)
             fitnesses.append(fit)
 

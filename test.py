@@ -6,7 +6,7 @@ spec = importlib.util.spec_from_file_location(
 infiltration = importlib.util.module_from_spec(spec)
 spec.loader.exec_module(infiltration)
 
-V = [infiltration.basin_params[i]['A_i'] * 1 for i in range(infiltration.num_basins)]
+V = [infiltration.basin_params[i]['A_i'] * 4 for i in range(infiltration.num_basins)]
 
 dV_dt, vInfiltration = infiltration.compute_dV_dt(V)
 
@@ -15,3 +15,5 @@ for i, dV in enumerate(dV_dt):
     print(f"Basin {i + 1}: {dV:.4f} m³/s")
 for i, infiltration in enumerate(vInfiltration):
     print(f"Basin {i + 1}: {infiltration} m³/s")
+for vol in V:
+    print("Volume: ", vol)

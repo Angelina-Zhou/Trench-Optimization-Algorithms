@@ -11,12 +11,14 @@ spec.loader.exec_module(infiltration)
 V0 = [infiltration.basin_params[i]['A_i'] * 1 for i in range(infiltration.num_basins)]
 
 NUM_TIME_STEPS = 100
-Q_in = 0.0315  # m³/s
+Q_in = 3  # m³/s
 TIME_STEP_SECONDS = 3600
 
-basin_sequence = [2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2,
- 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 1, 2, 2, 2, 2, 1, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2,
- 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2]
+# basin_sequence = [2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2,
+#  2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 1, 2, 2, 2, 2, 1, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2,
+# 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2]
+
+basin_sequence = [np.int64(1), np.int64(3), np.int64(4), np.int64(1), np.int64(0), np.int64(5), np.int64(2), np.int64(2), np.int64(2), np.int64(7), np.int64(1), np.int64(1), np.int64(2), np.int64(2), np.int64(0), np.int64(4), np.int64(2), np.int64(2), np.int64(6), np.int64(2), np.int64(7), np.int64(2), np.int64(0), np.int64(3), np.int64(1), np.int64(4), np.int64(2), np.int64(8), np.int64(4), np.int64(8), np.int64(1), np.int64(0), np.int64(3), np.int64(5), np.int64(4), np.int64(7), np.int64(6), np.int64(2), np.int64(8), np.int64(2), np.int64(5), np.int64(2), np.int64(4), np.int64(7), np.int64(6), np.int64(2), np.int64(7), np.int64(7), np.int64(1), np.int64(4), np.int64(8), np.int64(5), np.int64(6), np.int64(0), np.int64(1), np.int64(3), np.int64(2), np.int64(1), np.int64(1), np.int64(7), np.int64(6), np.int64(7), np.int64(7), np.int64(2), np.int64(2), np.int64(1), np.int64(1), np.int64(5), np.int64(6), np.int64(5), np.int64(5), np.int64(4), np.int64(2), np.int64(2), np.int64(1), np.int64(5), np.int64(6), np.int64(8), np.int64(6), np.int64(7), np.int64(1), np.int64(4), np.int64(7), np.int64(5), np.int64(6), np.int64(7), np.int64(6), np.int64(2), np.int64(0), np.int64(2), np.int64(7), np.int64(5), np.int64(5), np.int64(0), np.int64(4), np.int64(6), np.int64(5), np.int64(5), np.int64(7), np.int64(2)]
 
 def fitness_function():
     V = V0.copy()

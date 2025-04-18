@@ -19,7 +19,7 @@ V0 = [infiltration.basin_params[i]['A_i'] * 1 for i in range(infiltration.num_ba
 
 NUM_PARTICLES = 30
 NUM_ANTS = 50
-NUM_TIME_STEPS = 1000
+NUM_TIME_STEPS = 250
 NUM_ITERATIONS = 300
 Q_in = 0.5  # m³/s TODO: try 0.0315, which is the combined infiltration rate of V0
 TIME_STEP_SECONDS = 3600
@@ -52,9 +52,6 @@ def fitness_func_with_repair(solution):
 
             if not redistributed:
                 penalty += PENALTY_COEFF * overflow_volume
-                # TODO: do something with the penalty
-                # perhaps subtract penalty from score?
-                # though perhaps losing the water is penalty enough
             else:
                 dV_dt, vInfiltration = infiltration.compute_dV_dt(V, neighbor_selected - 1)
 
